@@ -1,4 +1,6 @@
+import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
+import 'package:instgram_app/screens/login.dart';
 import 'package:instgram_app/widgets/post.dart';
 
 class HomeScreen extends StatefulWidget {
@@ -9,6 +11,34 @@ class HomeScreen extends StatefulWidget {
 }
 
 class _HomeScreenState extends State<HomeScreen> {
+
+  final FirebaseAuth _auth = FirebaseAuth.instance;
+  bool _isLoading = false;
+  Future<void> logout() async {
+    setState(() {
+      _isLoading = true;
+    });
+
+    try {
+      await _auth.signOut();
+      // Successfully logged out
+      print('User logged out');
+      Navigator.of(context)
+          .pushReplacement(MaterialPageRoute(builder: (context) {
+        return LoginScreen();
+      }));
+      // You can navigate to the login screen or show a success message here
+    } catch (e) {
+      print('Error logging out: $e');
+      // Show error message to user
+      ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text('Error: $e')));
+    } finally {
+      setState(() {
+        _isLoading = false;
+      });
+    }
+  }
+
   @override
   Widget build(BuildContext context) {
     double h = MediaQuery.of(context).size.height;
@@ -31,8 +61,12 @@ class _HomeScreenState extends State<HomeScreen> {
                   fontWeight: FontWeight.bold,
                 ),
               ),
-              IconButton(
-                onPressed: () {},
+              _isLoading
+                  ? const Center(child: CircularProgressIndicator())
+                  :  IconButton(
+                onPressed: () {
+                  logout();
+                },
                 icon: const Icon(
                   Icons.logout,
                   color: Colors.white,
