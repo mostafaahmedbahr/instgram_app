@@ -4,6 +4,7 @@ import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:image_picker/image_picker.dart';
 import 'package:instgram_app/screens/bottom_nav_bar.dart';
+import 'package:instgram_app/screens/login.dart';
 
 class SignUpScreen extends StatefulWidget {
   const SignUpScreen({super.key});
@@ -222,7 +223,12 @@ class _SignUpScreenState extends State<SignUpScreen> {
                       ),
                     ),
                     TextButton(
-                      onPressed: () {},
+                      onPressed: () {
+                        Navigator.of(context)
+                            .push(MaterialPageRoute(builder: (context) {
+                          return const LoginScreen();
+                        }));
+                      },
                       child: const Text("Do you have an account ? "),
                     ),
                   ]),

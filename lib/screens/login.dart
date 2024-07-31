@@ -1,4 +1,7 @@
+import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
+
+import 'bottom_nav_bar.dart';
 
 class LoginScreen extends StatefulWidget {
   const LoginScreen({super.key});
@@ -9,6 +12,44 @@ class LoginScreen extends StatefulWidget {
 
 class _LoginScreenState extends State<LoginScreen> {
   final formKey = GlobalKey<FormState>();
+
+  final _emailController = TextEditingController();
+  final _passwordController = TextEditingController();
+  final FirebaseAuth _auth = FirebaseAuth.instance;
+  bool _isLoading = false;
+  Future<void> loginWithEmailAndPassword() async {
+    setState(() {
+      _isLoading = true;
+    });
+
+    try {
+      UserCredential userCredential = await _auth.signInWithEmailAndPassword(
+        email: _emailController.text.trim(),
+        password: _passwordController.text.trim(),
+      );
+      // Successfully logged in
+      print('User logged in: ${userCredential.user?.uid}');
+      Navigator.of(context)
+          .pushReplacement(MaterialPageRoute(builder: (context) {
+        return BottomNavBarScreen();
+      }));
+      // You can navigate to another screen or show a success message here
+    } catch (e) {
+      print('Error logging in: $e');
+      // Show error message to user
+      ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text('Error: $e')));
+    } finally {
+      setState(() {
+        _isLoading = false;
+      });
+    }
+  }
+  @override
+  void dispose() {
+    _emailController.dispose();
+    _passwordController.dispose();
+    super.dispose();
+  }
   @override
   Widget build(BuildContext context) {
     double h = MediaQuery.of(context).size.height;
@@ -37,6 +78,7 @@ class _LoginScreenState extends State<LoginScreen> {
                   key: formKey,
                   child: Column(children: [
                     TextFormField(
+                      controller : _emailController,
                       style: TextStyle(color: Colors.white),
                       validator: (value) {
                         if (value!.isEmpty || !value.contains("@")) {
@@ -58,6 +100,7 @@ class _LoginScreenState extends State<LoginScreen> {
                       height: h * 0.02,
                     ),
                     TextFormField(
+                      controller : _passwordController,
                       style: TextStyle(color: Colors.white),
                       validator: (value) {
                         if (value!.isEmpty || value.length < 8) {
@@ -82,11 +125,15 @@ class _LoginScreenState extends State<LoginScreen> {
                     SizedBox(
                       height: h * 0.05,
                     ),
-                    SizedBox(
+                    _isLoading
+                        ? const Center(child: CircularProgressIndicator())
+                        : SizedBox(
                       width: double.infinity,
                       height: h * 0.06,
                       child: ElevatedButton(
-                        onPressed: () {},
+                        onPressed: () {
+                          loginWithEmailAndPassword();
+                        },
                         child: const Text("Login"),
                       ),
                     ),
