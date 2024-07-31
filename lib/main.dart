@@ -1,3 +1,4 @@
+import 'package:firebase_auth/firebase_auth.dart';
 import 'package:firebase_core/firebase_core.dart';
 import 'package:flutter/material.dart';
 import 'package:instgram_app/screens/bottom_nav_bar.dart';
@@ -22,7 +23,20 @@ class MyApp extends StatelessWidget {
       theme: ThemeData(
         scaffoldBackgroundColor: Colors.black,
       ),
-      home: const SignUpScreen(),
+      home: StreamBuilder<User?>(
+        stream: FirebaseAuth.instance.authStateChanges(),
+        builder: (context, snapshot) {
+          if (snapshot.connectionState == ConnectionState.waiting) {
+            return const Scaffold(
+              body: Center(child: CircularProgressIndicator()),
+            );
+          } else if (snapshot.hasData) {
+            return const BottomNavBarScreen(); // If the user is logged in, show the home screen
+          } else {
+            return const LoginScreen(); // If the user is not logged in, show the login screen
+          }
+        },
+      ),
     );
   }
 }

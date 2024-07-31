@@ -1,5 +1,6 @@
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
+import 'package:instgram_app/screens/sign_up.dart';
 
 import 'bottom_nav_bar.dart';
 
@@ -138,7 +139,12 @@ class _LoginScreenState extends State<LoginScreen> {
                       ),
                     ),
                     TextButton(
-                      onPressed: () {},
+                      onPressed: () {
+                        Navigator.of(context)
+                            .push(MaterialPageRoute(builder: (context) {
+                          return const SignUpScreen();
+                        }));
+                      },
                       child: const Text("Create new account ! "),
                     ),
                   ]),
