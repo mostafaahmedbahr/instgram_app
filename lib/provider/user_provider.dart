@@ -6,9 +6,9 @@ import '../models/user_model.dart';
 
 class UserProvider extends ChangeNotifier{
 
-  UserProvider() {
-    fetchUserData();
-  }
+  // UserProvider() {
+  //   fetchUserData();
+  // }
 
   var uid = FirebaseAuth.instance.currentUser!.uid;
   UserModel? userModel;
