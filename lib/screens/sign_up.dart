@@ -1,8 +1,11 @@
 import 'dart:io';
 
+import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
+import 'package:firebase_storage/firebase_storage.dart';
 import 'package:flutter/material.dart';
 import 'package:image_picker/image_picker.dart';
+import 'package:instgram_app/models/user_model.dart';
 import 'package:instgram_app/screens/bottom_nav_bar.dart';
 import 'package:instgram_app/screens/login.dart';
 
@@ -53,6 +56,7 @@ class _SignUpScreenState extends State<SignUpScreen> {
       );
       // Successfully signed up
       print('User signed up: ${userCredential.user?.uid}');
+      await storeUserDataInFirebaseFirestore(userCredential.user?.uid);
       Navigator.of(context)
           .pushReplacement(MaterialPageRoute(builder: (context) {
         return BottomNavBarScreen();
@@ -67,6 +71,35 @@ class _SignUpScreenState extends State<SignUpScreen> {
         isLoading = false;
       });
     }
+  }
+
+  Future<void> storeUserDataInFirebaseFirestore(String? uid) async {
+    if (uid == null) return;
+    String imageUrl = '';
+    if (pickedImage != null) {
+      imageUrl = await uploadImageToStorage(uid);
+    }
+    UserModel userModel = UserModel(
+      name: nameCon.text.trim(),
+      email: emailCon.text.trim(),
+      password: passwordCon.text.trim(),
+      uid: uid,
+      image: imageUrl,
+      followers: [],
+      following: [],
+    );
+    await FirebaseFirestore.instance.collection('instaAppUsers')
+        .doc(uid).set(userModel.toMap());
+  }
+
+  Future<String> uploadImageToStorage(String uid) async {
+    final ref = FirebaseStorage.instance
+        .ref()
+        .child('insta_app_user_images')
+        .child('$uid.jpg');
+
+    await ref.putFile(pickedImage!);
+    return await ref.getDownloadURL();
   }
 
   @override
