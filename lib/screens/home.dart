@@ -4,6 +4,7 @@ import 'package:instgram_app/screens/login.dart';
 import 'package:instgram_app/widgets/post.dart';
 import 'package:provider/provider.dart';
 
+import '../provider/post_provider.dart';
 import '../provider/user_provider.dart';
 
 class HomeScreen extends StatefulWidget {
@@ -14,9 +15,9 @@ class HomeScreen extends StatefulWidget {
 }
 
 class _HomeScreenState extends State<HomeScreen> {
-
   final FirebaseAuth _auth = FirebaseAuth.instance;
   bool _isLoading = false;
+
   Future<void> logout() async {
     setState(() {
       _isLoading = true;
@@ -34,14 +35,14 @@ class _HomeScreenState extends State<HomeScreen> {
     } catch (e) {
       print('Error logging out: $e');
       // Show error message to user
-      ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text('Error: $e')));
+      ScaffoldMessenger.of(context)
+          .showSnackBar(SnackBar(content: Text('Error: $e')));
     } finally {
       setState(() {
         _isLoading = false;
       });
     }
   }
-
 
   @override
   void initState() {
@@ -55,7 +56,9 @@ class _HomeScreenState extends State<HomeScreen> {
 
   @override
   Widget build(BuildContext context) {
-
+    Future.microtask(() {
+      Provider.of<PostProvider>(context, listen: false).fetchPosts();
+    });
     double h = MediaQuery.of(context).size.height;
     double w = MediaQuery.of(context).size.width;
     return Padding(
@@ -78,27 +81,40 @@ class _HomeScreenState extends State<HomeScreen> {
               ),
               _isLoading
                   ? const Center(child: CircularProgressIndicator())
-                  :  IconButton(
-                onPressed: () {
-                  logout();
-                },
-                icon: const Icon(
-                  Icons.logout,
-                  color: Colors.white,
-                ),
-              ),
+                  : IconButton(
+                      onPressed: () {
+                        logout();
+                      },
+                      icon: const Icon(
+                        Icons.logout,
+                        color: Colors.white,
+                      ),
+                    ),
             ],
           ),
           SizedBox(
             height: h * 0.02,
           ),
           Expanded(
-            child: ListView.builder(
-              itemCount: 5,
-              itemBuilder: (context, index) {
-                return PostWidget();
-              },
-            ),
+            child:
+                Consumer<PostProvider>(builder: (context, postProvider, child) {
+              if (postProvider.isLoading) {
+                return const Center(child: CircularProgressIndicator());
+              }
+
+              if (postProvider.posts.isEmpty) {
+                return const Center(child: Text('No posts available.'));
+              }
+              return ListView.builder(
+                itemCount: postProvider.posts.length,
+                itemBuilder: (context, index) {
+                  final post = postProvider.posts[index];
+                  return PostWidget(
+                    post: post,
+                  );
+                },
+              );
+            }),
           ),
         ],
       ),
