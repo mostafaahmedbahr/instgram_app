@@ -1,5 +1,7 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
+import 'package:instgram_app/provider/user_provider.dart';
+import 'package:provider/provider.dart';
 
 class PostProvider with ChangeNotifier {
   List<Map<String, dynamic>> _posts = [];
@@ -11,7 +13,6 @@ class PostProvider with ChangeNotifier {
   Future<void> fetchPosts() async {
     _isLoading = true;
     notifyListeners();
-
     try {
       final snapshot = await FirebaseFirestore.instance
           .collection('instaAppPosts')
@@ -24,6 +25,43 @@ class PostProvider with ChangeNotifier {
     } finally {
       _isLoading = false;
       notifyListeners();
+    }
+  }
+
+  Stream<DocumentSnapshot> getPostStream(String postId) {
+    return FirebaseFirestore.instance.collection('instaAppPosts').doc(postId).snapshots();
+  }
+
+  Future<void> likePost(String postId , context , bool currentUserLikeOrNot) async {
+    final String userId = Provider.of<UserProvider>(context, listen: false).userModel?.uid ?? '';
+    final String userName = Provider.of<UserProvider>(context, listen: false).userModel?.name ?? '';
+    final String userImage = Provider.of<UserProvider>(context, listen: false).userModel?.image ?? '';
+    final postDoc = FirebaseFirestore.instance.collection('instaAppPosts')
+        .doc(postId);
+
+    try {
+      // Check if the user has already liked the post
+      final docSnapshot = await postDoc.get();
+      final data = docSnapshot.data();
+      final List<dynamic> likedBy = data?['likedBy'] ?? [];
+
+      if (likedBy.contains(userId)) {
+        // If the user has already liked the post, remove the like
+        await postDoc.update({
+          'likedBy': FieldValue.arrayRemove([userId , userName , userImage]),
+          'likesCount': FieldValue.increment(-1),
+          'currentUserLikeOrNot' :  !currentUserLikeOrNot,
+        });
+      } else {
+        // If the user hasn't liked the post, add the like
+        await postDoc.update({
+          'likedBy': FieldValue.arrayUnion([userId , userName , userImage]),
+          'likesCount': FieldValue.increment(1),
+          'currentUserLikeOrNot' : currentUserLikeOrNot,
+        });
+      }
+    } catch (e) {
+      print('Error updating like: $e');
     }
   }
 }

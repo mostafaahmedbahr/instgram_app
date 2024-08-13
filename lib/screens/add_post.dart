@@ -5,6 +5,7 @@ import 'package:firebase_storage/firebase_storage.dart';
 import 'package:flutter/material.dart';
 import 'package:image_picker/image_picker.dart';
 import 'package:provider/provider.dart';
+import 'package:uuid/uuid.dart';
 
 import '../provider/user_provider.dart';
 
@@ -29,8 +30,9 @@ class _AddPostScreenState extends State<AddPostScreen> {
       });
     }
   }
-
+  final Uuid _uuid = const Uuid();
   Future<void> uploadPost() async {
+    final String postId = _uuid.v4(); // Generate a unique ID
     if (pickedImage == null) {
       ScaffoldMessenger.of(context).showSnackBar(
         const SnackBar(content: Text('Please upload an image')),
@@ -44,29 +46,37 @@ class _AddPostScreenState extends State<AddPostScreen> {
     }
 
     setState(() {
-      _isLoading = true; // Set loading to true
+      _isLoading = true;
     });
 
     final storageRef = FirebaseStorage.instance.ref();
-    final imageRef = storageRef.child('instaAppPosts/${DateTime.now().toIso8601String()}.jpg');
+    final imageRef = storageRef.child('instaAppPosts/$postId.jpg');
+    final String? userId = Provider.of<UserProvider>(context, listen: false).userModel?.uid;
 
     try {
       await imageRef.putFile(pickedImage!);
       final imageUrl = await imageRef.getDownloadURL();
 
-      await FirebaseFirestore.instance.collection('instaAppPosts').add({
+      await FirebaseFirestore.instance.collection('instaAppPosts')
+          .doc(postId).set({
+        'postId': postId, // Save the generated postId
         'userName': Provider.of<UserProvider>(context, listen: false).userModel?.name,
-        'userUid': Provider.of<UserProvider>(context, listen: false).userModel?.uid,
+        'userUid': userId,
         'userImage': Provider.of<UserProvider>(context, listen: false).userModel?.image,
         'postImageUrl': imageUrl,
         'postComment': commentCon.text,
         'timestamp': FieldValue.serverTimestamp(),
+        'likesCount': 0,
+        'commentsCount': 0,
+        'likedBy': [],
+        'commentedBy': [],
+        'currentUserLikeOrNot': false,
       });
 
       setState(() {
         pickedImage = null;
         commentCon.clear();
-        _isLoading = false; // Reset loading state
+        _isLoading = false;
       });
 
       ScaffoldMessenger.of(context).showSnackBar(
@@ -74,7 +84,7 @@ class _AddPostScreenState extends State<AddPostScreen> {
       );
     } catch (e) {
       setState(() {
-        _isLoading = false; // Reset loading state on error
+        _isLoading = false;
       });
 
       print('Error uploading post: $e');
@@ -83,6 +93,7 @@ class _AddPostScreenState extends State<AddPostScreen> {
       );
     }
   }
+
 
   @override
   Widget build(BuildContext context) {
