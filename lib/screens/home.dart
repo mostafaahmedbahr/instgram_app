@@ -100,24 +100,30 @@ class _HomeScreenState extends State<HomeScreen> {
           ),
           Expanded(
             child:
-                Consumer<PostProvider>(builder: (context, postProvider, child) {
-              if (postProvider.isLoading) {
-                return const Center(child: CircularProgressIndicator());
-              }
+            StreamBuilder<QuerySnapshot>(
+              stream: FirebaseFirestore.instance.collection('instaAppPosts').snapshots(),
+    builder: (context, snapshot) {
+                return  Consumer<PostProvider>(builder: (context, postProvider, child) {
+                  if (postProvider.isLoading) {
+                    return const Center(child: CircularProgressIndicator());
+                  }
 
-              if (postProvider.posts.isEmpty) {
-                return const Center(child: Text('No posts available.'));
-              }
-              return ListView.builder(
-                itemCount: postProvider.posts.length,
-                itemBuilder: (context, index) {
-                  final post = postProvider.posts[index];
-                  return PostWidget(
-                    post: post,
+                  if (!snapshot.hasData || snapshot.data!.docs.isEmpty) {
+                    return const Center(child: Text('No posts available.'));
+                  }
+                  final posts = snapshot.data!.docs.map((doc) {
+                    return doc.data() as Map<String, dynamic>;
+                  }).toList();
+                  return ListView.builder(
+                    itemCount: posts.length,
+                    itemBuilder: (context, index) {
+                      return PostWidget(post: posts[index]);
+                    },
                   );
-                },
-              );
-            }),
+                });
+    }
+
+                ),
           ),
         ],
       ),

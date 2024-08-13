@@ -64,4 +64,20 @@ class PostProvider with ChangeNotifier {
       print('Error updating like: $e');
     }
   }
+
+
+  Future<void> deletePost(BuildContext context, String postId) async {
+    try {
+      await FirebaseFirestore.instance.collection('instaAppPosts').doc(postId).delete();
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text('Post deleted successfully')),
+      );
+    } catch (e) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text('Error deleting post: $e')),
+      );
+    }
+  }
+
+
 }
