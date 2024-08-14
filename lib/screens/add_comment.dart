@@ -165,7 +165,11 @@ class _AddCommentScreenState extends State<AddCommentScreen> {
                     style: const TextStyle(color: Colors.white),
                     decoration:   InputDecoration(
                       suffixIcon: IconButton(
-                        onPressed: addComment,
+                        onPressed: (){
+                          if(commentController.text!=""){
+                            addComment();
+                          }
+                        },
                         icon: const Icon(Icons.send),
                       ),
                       hintText: "Add New Comment",

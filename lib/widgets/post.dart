@@ -134,9 +134,27 @@ class PostWidget extends StatelessWidget {
                   "${post["likesCount"]} Likes",
                   style: const TextStyle(color: Colors.white, fontSize: 20),
                 ),
-                const Text(
-                  "comment 1 ...",
-                  style: TextStyle(color: Colors.white, fontSize: 16),
+                StreamBuilder<QuerySnapshot>(
+                  stream:  FirebaseFirestore.instance
+                      .collection('instaAppPosts')
+                      .doc(post["postId"])
+                      .collection('commentedBy') // Changed from 'commentedBy' to 'comments'
+                      .orderBy('createdAt', descending: true)
+                      .snapshots(),
+    builder: (context, snapshot) {
+      if (!snapshot.hasData || snapshot.data!.docs.isEmpty) {
+        return const Text(
+          "No comments yet",
+          style: TextStyle(color: Colors.white, fontSize: 16),
+        );
+      }final comment = snapshot.data!.docs.first.data() as Map<String, dynamic>;
+      final commentText = comment['commentText'] ?? 'No content';
+      return Text(
+        commentText,
+        style: const TextStyle(color: Colors.white, fontSize: 16),
+      );
+    }
+
                 ),
                 TextButton(
                   onPressed: () {

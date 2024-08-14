@@ -31,7 +31,8 @@ class PostProvider with ChangeNotifier {
   }
 
   Stream<DocumentSnapshot> getPostStream(String postId) {
-    return FirebaseFirestore.instance.collection('instaAppPosts').doc(postId).snapshots();
+    return FirebaseFirestore.instance.collection('instaAppPosts')
+        .doc(postId).snapshots();
   }
 
   Future<void> likePost(String postId , context , bool currentUserLikeOrNot) async {
