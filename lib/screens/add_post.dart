@@ -69,8 +69,8 @@ class _AddPostScreenState extends State<AddPostScreen> {
         'likesCount': 0,
         'commentsCount': 0,
         'likedBy': [],
-        'commentedBy': [],
         'currentUserLikeOrNot': false,
+        'currentUserCommentOrNot': false,
       });
 
       setState(() {

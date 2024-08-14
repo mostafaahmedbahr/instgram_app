@@ -142,7 +142,9 @@ class PostWidget extends StatelessWidget {
                   onPressed: () {
                     Navigator.of(context)
                         .push(MaterialPageRoute(builder: (context) {
-                      return const AddCommentScreen();
+                      return   AddCommentScreen(
+                        postId: post["postId"],
+                      );
                     }));
                   },
                   child: const Text(
