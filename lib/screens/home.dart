@@ -46,7 +46,6 @@ class _HomeScreenState extends State<HomeScreen> {
   }
 
 
-
   @override
   void initState() {
     // TODO: implement initState
@@ -54,6 +53,7 @@ class _HomeScreenState extends State<HomeScreen> {
     WidgetsBinding.instance.addPostFrameCallback((_) {
       final userProvider = Provider.of<UserProvider>(context, listen: false);
       userProvider.fetchUserData();
+    //  userProvider.fetchUserPosts(userId: FirebaseAuth.instance.currentUser!.uid);
     });
   }
 

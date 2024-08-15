@@ -1,4 +1,5 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 
@@ -13,6 +14,15 @@ class ProfileScreen extends StatefulWidget {
 }
 
 class _ProfileScreenState extends State<ProfileScreen> {
+  @override
+  void initState() {
+    super.initState();
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      final userProvider = Provider.of<UserProvider>(context, listen: false);
+      // userProvider.fetchUserData();
+      userProvider.fetchUserPosts(userId: FirebaseAuth.instance.currentUser!.uid);
+    });
+  }
   @override
   Widget build(BuildContext context) {
     final userProvider = Provider.of<UserProvider>(context);
@@ -35,7 +45,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
                          //   "https://img.freepik.com/free-photo/international-day-education-celebration_23-2150931022.jpg?t=st=1721128291~exp=1721131891~hmac=be6b799ae01a499e56028121b8d0fa57b2db43b5850175c4ab1f9c1c606b11dc&w=740",
                           ),
                         ),
-                        Column(
+                        const Column(
                           children: [
                             Text(
                               "5",
@@ -54,9 +64,9 @@ class _ProfileScreenState extends State<ProfileScreen> {
                             Text(
                               "${userProvider.userModel?.followers.length}",
                               style:
-                                  TextStyle(fontSize: 18, color: Colors.white),
+                                  const TextStyle(fontSize: 18, color: Colors.white),
                             ),
-                            Text(
+                            const Text(
                               "follwers",
                               style:
                                   TextStyle(fontSize: 18, color: Colors.white),
@@ -68,9 +78,9 @@ class _ProfileScreenState extends State<ProfileScreen> {
                             Text(
                               "${userProvider.userModel?.following.length}",
                               style:
-                                  TextStyle(fontSize: 18, color: Colors.white),
+                                  const TextStyle(fontSize: 18, color: Colors.white),
                             ),
-                            Text(
+                            const Text(
                               "following",
                               style:
                                   TextStyle(fontSize: 18, color: Colors.white),
@@ -84,7 +94,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
                     ),
                       Text(
                       "${userProvider.userModel?.name}",
-                      style: TextStyle(
+                      style: const TextStyle(
                           fontWeight: FontWeight.bold,
                           fontSize: 18,
                           color: Colors.white),
@@ -106,15 +116,19 @@ class _ProfileScreenState extends State<ProfileScreen> {
                       height: h * 0.01,
                     ),
                     Expanded(
-                      child: GridView.count(
+                      child:
+                      userProvider.isLoadingPosts ? const Center(
+                        child: CircularProgressIndicator(),
+                      ):
+                      GridView.count(
                         shrinkWrap: true,
                         physics: const NeverScrollableScrollPhysics(),
                         crossAxisSpacing: 5,
                         mainAxisSpacing: 5,
                         crossAxisCount: 3,
-                        children: List.generate(5, (index) {
+                        children: List.generate(userProvider.userPostsList.length, (index) {
                           return Image.network(
-                              "https://img.freepik.com/free-photo/international-day-education-celebration_23-2150931022.jpg?t=st=1721128291~exp=1721131891~hmac=be6b799ae01a499e56028121b8d0fa57b2db43b5850175c4ab1f9c1c606b11dc&w=740");
+                              "${userProvider.userPostsList[index]["postImageUrl"]}",fit: BoxFit.cover,);
                         }),
                       ),
                     ),
