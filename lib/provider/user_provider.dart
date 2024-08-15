@@ -15,14 +15,14 @@ class UserProvider extends ChangeNotifier{
   UserModel? userModel;
   bool isLoading = false;
 
-  Future<void> fetchUserData() async {
+  Future<void> fetchUserData({required String userId}) async {
     isLoading = true;
     notifyListeners();
 
     try {
-      String? uid = FirebaseAuth.instance.currentUser?.uid;
-      if (uid != null) {
-        userModel = await FirebaseFirestoreMethod().getUserDataFromFirebaseFirestore(uid);
+      // String? uid = FirebaseAuth.instance.currentUser?.uid;
+      if (userId != null) {
+        userModel = await FirebaseFirestoreMethod().getUserDataFromFirebaseFirestore(userId);
         if (userModel != null) {
           print('User Name: ${userModel!.name}');
         }

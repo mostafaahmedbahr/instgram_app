@@ -19,7 +19,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
     super.initState();
     WidgetsBinding.instance.addPostFrameCallback((_) {
       final userProvider = Provider.of<UserProvider>(context, listen: false);
-      // userProvider.fetchUserData();
+        userProvider.fetchUserData(userId: FirebaseAuth.instance.currentUser!.uid);
       userProvider.fetchUserPosts(userId: FirebaseAuth.instance.currentUser!.uid);
     });
   }
@@ -45,10 +45,10 @@ class _ProfileScreenState extends State<ProfileScreen> {
                          //   "https://img.freepik.com/free-photo/international-day-education-celebration_23-2150931022.jpg?t=st=1721128291~exp=1721131891~hmac=be6b799ae01a499e56028121b8d0fa57b2db43b5850175c4ab1f9c1c606b11dc&w=740",
                           ),
                         ),
-                        const Column(
+                          Column(
                           children: [
                             Text(
-                              "5",
+                              "${userProvider.userPostsList.length}",
                               style:
                                   TextStyle(fontSize: 18, color: Colors.white),
                             ),

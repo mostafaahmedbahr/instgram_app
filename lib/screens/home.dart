@@ -52,8 +52,7 @@ class _HomeScreenState extends State<HomeScreen> {
     super.initState();
     WidgetsBinding.instance.addPostFrameCallback((_) {
       final userProvider = Provider.of<UserProvider>(context, listen: false);
-      userProvider.fetchUserData();
-    //  userProvider.fetchUserPosts(userId: FirebaseAuth.instance.currentUser!.uid);
+      userProvider.fetchUserData(userId: FirebaseAuth.instance.currentUser!.uid.toString());
     });
   }
 

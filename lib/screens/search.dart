@@ -1,6 +1,7 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
+import 'package:instgram_app/screens/profile_screen_for_another_user.dart';
 
 class SearchScreen extends StatefulWidget {
   const SearchScreen({super.key});
@@ -87,20 +88,30 @@ class _SearchScreenState extends State<SearchScreen> {
                     final userEmail = user['email'] ?? 'No Email';
                     final userImage = user['image'] ?? 'No Email';
                     final userId = user['uid'] ?? 'No Email';
-                    return   Padding(
-                      padding: const EdgeInsets.symmetric(vertical: 10),
-                      child: ListTile(
-                        title: Text(
-                          userName,
-                          style: const TextStyle(
-                              color: Colors.white,
-                              fontSize: 22,
-                              fontWeight: FontWeight.bold),
-                        ),
-                        leading: CircleAvatar(
-                          radius: 30,
-                          backgroundImage: NetworkImage(
-                            userImage,
+                    return   InkWell(
+                      onTap: (){
+                        Navigator.of(context)
+                            .push(MaterialPageRoute(builder: (context) {
+                          return   ProfileScreenForAnotherUser(
+                            uid: userId,
+                          );
+                        }));
+                      },
+                      child: Padding(
+                        padding: const EdgeInsets.symmetric(vertical: 10),
+                        child: ListTile(
+                          title: Text(
+                            userName,
+                            style: const TextStyle(
+                                color: Colors.white,
+                                fontSize: 22,
+                                fontWeight: FontWeight.bold),
+                          ),
+                          leading: CircleAvatar(
+                            radius: 30,
+                            backgroundImage: NetworkImage(
+                              userImage,
+                            ),
                           ),
                         ),
                       ),
