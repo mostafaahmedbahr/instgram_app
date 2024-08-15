@@ -2,6 +2,7 @@ import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:instgram_app/screens/login.dart';
+import 'package:instgram_app/screens/story_screen.dart';
 import 'package:instgram_app/widgets/post.dart';
 import 'package:provider/provider.dart';
 
@@ -93,6 +94,51 @@ class _HomeScreenState extends State<HomeScreen> {
                       ),
                     ),
             ],
+          ),
+          SizedBox(
+            height: h * 0.02,
+          ),
+          SizedBox(
+            height: 100,
+            child: ListView.separated(
+              scrollDirection: Axis.horizontal,
+                itemBuilder: (context ,index){
+                  return InkWell(
+                    onTap: (){
+                      Navigator.push(context, MaterialPageRoute(builder: (context){
+                        return StoryScreen();
+                      }));
+                    },
+                    child: Column(
+                      children: [
+                        Container(
+                          height: 70,
+                          width: 70,
+                          decoration:   BoxDecoration(
+                            shape: BoxShape.circle,
+                            border: Border.all(
+                              width: 2,
+                              color: Colors.red,
+                            ),
+                            image: DecorationImage(
+                              fit: BoxFit.cover,
+                              image: NetworkImage("https://img.freepik.com/free-photo/international-day-education-celebration_23-2150931022.jpg?t=st=1721128291~exp=1721131891~hmac=be6b799ae01a499e56028121b8d0fa57b2db43b5850175c4ab1f9c1c606b11dc&w=740"),
+                            )
+                          ),
+                        ),
+                        SizedBox(height: 5,),
+                        Text("name",style: TextStyle(
+                          color: Colors.white
+                        ),),
+                      ],
+                    ),
+                  );
+                },
+                separatorBuilder: (context ,index){
+                  return const SizedBox(width: 10,);
+                },
+                itemCount: 10,
+            ),
           ),
           SizedBox(
             height: h * 0.02,

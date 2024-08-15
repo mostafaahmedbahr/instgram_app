@@ -5,6 +5,7 @@ import 'package:provider/provider.dart';
 
 import '../models/user_model.dart';
 import '../provider/user_provider.dart';
+import 'add_story_screen.dart';
 
 class ProfileScreen extends StatefulWidget {
   const ProfileScreen({super.key});
@@ -39,11 +40,25 @@ class _ProfileScreenState extends State<ProfileScreen> {
                       Row(
                       mainAxisAlignment: MainAxisAlignment.spaceBetween,
                       children: [
-                        CircleAvatar(
-                          radius: 35,
-                          backgroundImage: NetworkImage("${userProvider.userModel?.image}"
-                         //   "https://img.freepik.com/free-photo/international-day-education-celebration_23-2150931022.jpg?t=st=1721128291~exp=1721131891~hmac=be6b799ae01a499e56028121b8d0fa57b2db43b5850175c4ab1f9c1c606b11dc&w=740",
-                          ),
+                        Stack(
+                          alignment: Alignment.bottomRight,
+                          children: [
+                            CircleAvatar(
+                              radius: 35,
+                              backgroundImage: NetworkImage("${userProvider.userModel?.image}"
+                              ),
+                            ),
+                            CircleAvatar(
+                              radius: 15,
+                              backgroundColor: Colors.white,
+                              child: IconButton(onPressed: (){
+                                Navigator.push(context, MaterialPageRoute(builder: (context){
+                                  return const AddStoryScreen();
+                                }));
+                              },
+                                  icon: const Icon(Icons.camera,size: 15,),),
+                            ),
+                          ],
                         ),
                           Column(
                           children: [
