@@ -22,7 +22,8 @@ class UserProvider extends ChangeNotifier{
     try {
       // String? uid = FirebaseAuth.instance.currentUser?.uid;
       if (userId != null) {
-        userModel = await FirebaseFirestoreMethod().getUserDataFromFirebaseFirestore(userId);
+        userModel = await FirebaseFirestoreMethod().
+        getUserDataFromFirebaseFirestore(uid: userId);
         if (userModel != null) {
           print('User Name: ${userModel!.name}');
         }
@@ -62,18 +63,9 @@ class UserProvider extends ChangeNotifier{
     }
   }
 
-  // Future<void> fetchUserPosts(String userId) async {
-  //   FirebaseFirestore firestore = FirebaseFirestore.instance;
-  //
-  //   QuerySnapshot querySnapshot = await firestore.collection('instaAppPosts')
-  //       .where('userId', isEqualTo: userId).get();
-  //
-  //   for (var doc in querySnapshot.docs) {
-  //     print(doc.id);
-  //     print(doc.data());
-  //     // Handle each post data
-  //   }
-  // }
+
+
+
 
 
 }

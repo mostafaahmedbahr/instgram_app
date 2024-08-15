@@ -7,7 +7,7 @@ class FirebaseFirestoreMethod{
 
 
 
-  Future<UserModel?> getUserDataFromFirebaseFirestore(String uid) async {
+  Future<UserModel?> getUserDataFromFirebaseFirestore({required String uid}) async {
     try {
       DocumentSnapshot documentSnapshot = await FirebaseFirestore.instance
           .collection('instaAppUsers').doc(uid).get();

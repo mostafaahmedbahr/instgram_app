@@ -50,9 +50,9 @@ class _ProfileScreenState extends State<ProfileScreen> {
                             Text(
                               "${userProvider.userPostsList.length}",
                               style:
-                                  TextStyle(fontSize: 18, color: Colors.white),
+                                  const TextStyle(fontSize: 18, color: Colors.white),
                             ),
-                            Text(
+                            const Text(
                               "posts",
                               style:
                                   TextStyle(fontSize: 18, color: Colors.white),
@@ -67,7 +67,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
                                   const TextStyle(fontSize: 18, color: Colors.white),
                             ),
                             const Text(
-                              "follwers",
+                              "followers",
                               style:
                                   TextStyle(fontSize: 18, color: Colors.white),
                             ),
