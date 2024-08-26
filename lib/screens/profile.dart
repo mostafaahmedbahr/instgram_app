@@ -1,3 +1,5 @@
+import 'dart:async';
+
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
@@ -22,6 +24,11 @@ class _ProfileScreenState extends State<ProfileScreen> {
   void initState() {
     super.initState();
     fetchStories();
+    cleanupOldStories();
+    // Schedule periodic cleanup every 24 hours
+    Timer.periodic(const Duration(hours: 24), (timer) {
+      cleanupOldStories();
+    });
     WidgetsBinding.instance.addPostFrameCallback((_) {
       final userProvider = Provider.of<UserProvider>(context, listen: false);
         userProvider.fetchUserData(userId: FirebaseAuth.instance.currentUser!.uid);
@@ -56,6 +63,30 @@ class _ProfileScreenState extends State<ProfileScreen> {
     }
   }
 
+  Future<void> cleanupOldStories() async {
+    print("object");
+    final FirebaseFirestore _firestore = FirebaseFirestore.instance;
+    final now = Timestamp.now();
+    final cutoffTime = Timestamp.fromDate(DateTime.now().subtract(const Duration(hours: 24)));
+
+    try {
+      // Fetch stories older than 2 minutes
+      final querySnapshot = await _firestore.collection('instaAppStories')
+          .where('timestamp', isLessThan: cutoffTime)
+          .get();
+
+      // Delete the old stories
+      for (var doc in querySnapshot.docs) {
+        await _firestore.collection('instaAppStories').doc(doc.id).delete();
+      }
+
+      print('Old stories deleted successfully.');
+    } catch (e) {
+      print('Error deleting old stories: $e');
+    }
+  }
+
+
 
   @override
   Widget build(BuildContext context) {
@@ -78,13 +109,26 @@ class _ProfileScreenState extends State<ProfileScreen> {
                           children: [
                             InkWell(
                               onTap: (){
-                                Navigator.push(context, MaterialPageRoute(builder: (context){
-                                  return   UserStoryScreen(stories: userStories);
-                                }));
+                                if (userStories.isNotEmpty) { // Check if there are stories
+                                  Navigator.push(
+                                    context,
+                                    MaterialPageRoute(
+                                      builder: (context) => UserStoryScreen(stories: userStories),
+                                    ),
+                                  );
+                                }
                               },
                               child: CircleAvatar(
                                 radius: 35,
                                 backgroundImage: NetworkImage("${userProvider.userModel?.image}"
+                                ),
+                                child: Container(
+                                  decoration: BoxDecoration(
+                                    borderRadius: BorderRadius.circular(50),
+                                    border: userStories.isNotEmpty
+                                        ? Border.all(color: Colors.green, width: 3) // Green border if stories exist
+                                        : null,
+                                  ),
                                 ),
                               ),
                             ),
