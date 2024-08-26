@@ -1,10 +1,14 @@
 import 'dart:io';
 
+import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:firebase_storage/firebase_storage.dart';
 import 'package:flutter/material.dart';
 import 'package:image_picker/image_picker.dart';
 import 'package:provider/provider.dart';
+import 'package:uuid/uuid.dart';
 import 'package:video_player/video_player.dart';
 
+import '../models/story_model.dart';
 import '../provider/user_provider.dart';
 
 class AddStoryScreen extends StatefulWidget {
@@ -51,6 +55,101 @@ class _AddStoryScreenState extends State<AddStoryScreen> {
       });
     }
   }
+
+  Future<String> uploadFile(File file, bool isVideo) async {
+    try {
+      String fileType = isVideo ? 'videos' : 'images';
+      String fileName = const Uuid().v4(); // Generate a unique ID for the file
+      Reference storageRef = FirebaseStorage.instance.ref().child('stories/$fileType/$fileName');
+      UploadTask uploadTask = storageRef.putFile(file);
+      TaskSnapshot taskSnapshot = await uploadTask;
+      return await taskSnapshot.ref.getDownloadURL();
+    } catch (e) {
+      print("Error uploading file: $e");
+      throw e;
+    }
+  }
+
+  Future<void> uploadStoryToCollection(Story story) async {
+    try {
+      CollectionReference stories = FirebaseFirestore.instance.collection('instaAppStories');
+
+      // The story will be added to a field within the user's document.
+      // The field can be an array of stories or a map with the storyId as the key.
+      await stories.doc(story.storyId).set(story.toMap());
+
+      print("Story uploaded successfully to a separate field");
+    } catch (e) {
+      print("Failed to upload story: $e");
+      throw e;
+    }
+  }
+
+  Future<void> uploadUserStory(File? mediaFile,
+      String storyText, bool isVideo, String userId) async {
+    if (mediaFile == null) {
+      print("No media file selected.");
+      return;
+    }
+    try {
+      // Generate a unique story ID
+      String storyId = const Uuid().v4();
+      // Upload the media file (image or video) to Firebase Storage
+      String mediaUrl = await uploadFile(mediaFile, isVideo);
+
+      // Get the current timestamp
+      DateTime timestamp = DateTime.now();
+
+      // Create the Story object
+      Story story = Story(
+        storyId: storyId,
+        storyText: storyText,
+        storyMediaUrl: mediaUrl, // Use the media URL here
+        userId: userId,
+        timestamp: timestamp,
+      );
+
+      // Upload the story data to the instaAppStories collection
+      await uploadStoryToCollection(story);
+    } catch (e) {
+      print("Error during story upload: $e");
+    }
+  }
+
+  void handleStoryUpload() async {
+    setState(() {
+      _isLoading = true; // Start loading
+    });
+
+    File? selectedMediaFile = pickedImage ?? pickedVideo;
+    String storyText = commentCon.text;
+    bool isVideo = pickedVideo != null;
+    String? userId = Provider.of<UserProvider>(context, listen: false).userModel?.uid.toString();
+
+    if (selectedMediaFile != null) {
+      await uploadUserStory(selectedMediaFile, storyText, isVideo, userId!);
+      ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text("Story uploaded successfully")));
+
+      // Clear the form after a successful upload
+      setState(() {
+        pickedImage = null;
+        pickedVideo = null;
+        commentCon.clear();
+        _isLoading = false; // Stop loading
+      });
+    } else {
+      ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text("Please select an image or video")));
+
+      setState(() {
+        _isLoading = false; // Stop loading
+      });
+    }
+  }
+
+
+
+
+
   @override
   Widget build(BuildContext context) {
     final userProvider = Provider.of<UserProvider>(context);
@@ -87,18 +186,20 @@ class _AddStoryScreenState extends State<AddStoryScreen> {
                 ),
                 TextButton(
                   onPressed: (){
+                    handleStoryUpload();
+
                     //_isLoading ? null : uploadPost
                   }, // Disable button when loading
                   child: _isLoading
                       ? const CircularProgressIndicator(
                     color: Colors.white,
                   )
-                      : const Text("Next"),
+                      : const Text("Add"),
                 ),
               ],
             ),
             PopupMenuButton<String>(
-              icon: Icon(Icons.menu,color: Colors.white,),
+              icon: const Icon(Icons.menu,color: Colors.white,),
               onSelected: (choice) {
                 switch (choice) {
                   case "option1":
@@ -152,7 +253,7 @@ class _AddStoryScreenState extends State<AddStoryScreen> {
               height: h * 0.03,
             ),
             TextFormField(
-              // controller: commentCon,
+               controller: commentCon,
               maxLines: 10,
               style: const TextStyle(color: Colors.white),
               decoration: const InputDecoration(
