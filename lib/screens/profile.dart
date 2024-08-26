@@ -1,8 +1,11 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
+import 'package:instgram_app/screens/story_screen.dart';
+import 'package:instgram_app/screens/user_story_screen.dart';
 import 'package:provider/provider.dart';
 
+import '../models/story_model.dart';
 import '../models/user_model.dart';
 import '../provider/user_provider.dart';
 import 'add_story_screen.dart';
@@ -18,12 +21,42 @@ class _ProfileScreenState extends State<ProfileScreen> {
   @override
   void initState() {
     super.initState();
+    fetchStories();
     WidgetsBinding.instance.addPostFrameCallback((_) {
       final userProvider = Provider.of<UserProvider>(context, listen: false);
         userProvider.fetchUserData(userId: FirebaseAuth.instance.currentUser!.uid);
       userProvider.fetchUserPosts(userId: FirebaseAuth.instance.currentUser!.uid);
     });
   }
+  List<Story> userStories = [];
+  Future<void> fetchStories() async {
+    try {
+      // Get current user ID
+      String currentUserId = FirebaseAuth.instance.currentUser!.uid;
+
+      // Query Firestore to fetch stories for the current user
+      QuerySnapshot querySnapshot = await FirebaseFirestore.instance
+          .collection('instaAppStories')
+          .where('userId', isEqualTo: currentUserId)
+          .get();
+
+      // Convert the query snapshot to a list of Story objects
+      List<Story> stories = querySnapshot.docs.map((doc) {
+        return Story.fromMap(doc.data() as Map<String, dynamic>);
+      }).toList();
+
+      setState(() {
+        userStories = stories; // Store stories in the list
+      });
+    } catch (e) {
+      print("Error fetching stories: $e");
+      setState(() {
+        userStories = []; // Handle error and set an empty list
+      });
+    }
+  }
+
+
   @override
   Widget build(BuildContext context) {
     final userProvider = Provider.of<UserProvider>(context);
@@ -43,9 +76,16 @@ class _ProfileScreenState extends State<ProfileScreen> {
                         Stack(
                           alignment: Alignment.bottomRight,
                           children: [
-                            CircleAvatar(
-                              radius: 35,
-                              backgroundImage: NetworkImage("${userProvider.userModel?.image}"
+                            InkWell(
+                              onTap: (){
+                                Navigator.push(context, MaterialPageRoute(builder: (context){
+                                  return   UserStoryScreen(stories: userStories);
+                                }));
+                              },
+                              child: CircleAvatar(
+                                radius: 35,
+                                backgroundImage: NetworkImage("${userProvider.userModel?.image}"
+                                ),
                               ),
                             ),
                             CircleAvatar(
