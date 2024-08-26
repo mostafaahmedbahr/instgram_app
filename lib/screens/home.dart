@@ -6,6 +6,7 @@ import 'package:instgram_app/screens/story_screen.dart';
 import 'package:instgram_app/widgets/post.dart';
 import 'package:provider/provider.dart';
 
+import '../models/story_model.dart';
 import '../provider/post_provider.dart';
 import '../provider/user_provider.dart';
 
@@ -31,7 +32,7 @@ class _HomeScreenState extends State<HomeScreen> {
       print('User logged out');
       Navigator.of(context)
           .pushReplacement(MaterialPageRoute(builder: (context) {
-        return LoginScreen();
+        return const LoginScreen();
       }));
       // You can navigate to the login screen or show a success message here
     } catch (e) {
@@ -46,10 +47,22 @@ class _HomeScreenState extends State<HomeScreen> {
     }
   }
 
-
+  Future<List<Story>> fetchStories() async {
+    try {
+      QuerySnapshot querySnapshot = await FirebaseFirestore.instance.collection('instaAppStories').get();
+      List<Story> stories = querySnapshot.docs.map((doc) {
+        return Story.fromMap(doc.data() as Map<String, dynamic>);
+      }).toList();
+      return stories;
+    } catch (e) {
+      print("Error fetching stories: $e");
+      return [];
+    }
+  }
   @override
   void initState() {
     // TODO: implement initState
+    fetchStories();
     super.initState();
     WidgetsBinding.instance.addPostFrameCallback((_) {
       final userProvider = Provider.of<UserProvider>(context, listen: false);
@@ -98,47 +111,68 @@ class _HomeScreenState extends State<HomeScreen> {
           SizedBox(
             height: h * 0.02,
           ),
-          SizedBox(
-            height: 100,
-            child: ListView.separated(
-              scrollDirection: Axis.horizontal,
-                itemBuilder: (context ,index){
-                  return InkWell(
-                    onTap: (){
-                      Navigator.push(context, MaterialPageRoute(builder: (context){
-                        return StoryScreen();
-                      }));
-                    },
-                    child: Column(
-                      children: [
-                        Container(
-                          height: 70,
-                          width: 70,
-                          decoration:   BoxDecoration(
-                            shape: BoxShape.circle,
-                            border: Border.all(
-                              width: 2,
-                              color: Colors.red,
+          FutureBuilder<List<Story>>(
+            future: fetchStories(),
+            builder: (context, snapshot){
+              if (snapshot.connectionState == ConnectionState.waiting) {
+                return const Center(child: CircularProgressIndicator());
+              } else if (snapshot.hasError) {
+                return Center(child: Text('Error: ${snapshot.error}'));
+              } else if (!snapshot.hasData || snapshot.data!.isEmpty) {
+                return const Center(child: Text('No stories available.'));
+              }else{
+                List<Story> stories = snapshot.data!;
+                return  SizedBox(
+                  height: 100,
+                  child: ListView.separated(
+                    scrollDirection: Axis.horizontal,
+                    itemBuilder: (context ,index){
+                      Story story = stories[index];
+                      return InkWell(
+                        onTap: (){
+                          Navigator.push(context, MaterialPageRoute(builder: (context){
+                            return   StoryScreen(story: story,);
+                          }));
+                        },
+                        child: Column(
+                          children: [
+                            Container(
+                              height: 70,
+                              width: 70,
+                              decoration: BoxDecoration(
+                                shape: BoxShape.circle,
+                                border: Border.all(
+                                  width: 2,
+                                  color: Colors.red,
+                                ),
+                                image: DecorationImage(
+                                  fit: BoxFit.cover,
+                                  image: story.storyMediaUrl!.isNotEmpty
+                                      ? NetworkImage(story.storyMediaUrl.toString())
+                                      : const AssetImage('assets/placeholder_image.png') as ImageProvider, // Use a placeholder image
+                                ),
+                              ),
+                              child: story.isVideo
+                                  ? const Icon(Icons.play_arrow, color: Colors.white, size: 40) // Add a play icon for videos
+                                  : null,
                             ),
-                            image: DecorationImage(
-                              fit: BoxFit.cover,
-                              image: NetworkImage("https://img.freepik.com/free-photo/international-day-education-celebration_23-2150931022.jpg?t=st=1721128291~exp=1721131891~hmac=be6b799ae01a499e56028121b8d0fa57b2db43b5850175c4ab1f9c1c606b11dc&w=740"),
-                            )
-                          ),
+                            const SizedBox(height: 5,),
+                              Text(story.userName,style: const TextStyle(
+                                color: Colors.white
+                            ),),
+                          ],
                         ),
-                        SizedBox(height: 5,),
-                        Text("name",style: TextStyle(
-                          color: Colors.white
-                        ),),
-                      ],
-                    ),
-                  );
-                },
-                separatorBuilder: (context ,index){
-                  return const SizedBox(width: 10,);
-                },
-                itemCount: 10,
-            ),
+                      );
+                    },
+                    separatorBuilder: (context ,index){
+                      return const SizedBox(width: 10,);
+                    },
+                    itemCount: stories.length,
+                  ),
+                );
+              }
+              }
+
           ),
           SizedBox(
             height: h * 0.02,

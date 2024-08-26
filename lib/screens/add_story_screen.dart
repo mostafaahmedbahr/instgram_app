@@ -86,7 +86,7 @@ class _AddStoryScreenState extends State<AddStoryScreen> {
   }
 
   Future<void> uploadUserStory(File? mediaFile,
-      String storyText, bool isVideo, String userId) async {
+      String storyText, bool isVideo, String userId , String userName) async {
     if (mediaFile == null) {
       print("No media file selected.");
       return;
@@ -106,7 +106,9 @@ class _AddStoryScreenState extends State<AddStoryScreen> {
         storyText: storyText,
         storyMediaUrl: mediaUrl, // Use the media URL here
         userId: userId,
+        userName: userName,
         timestamp: timestamp,
+        isVideo: isVideo,
       );
 
       // Upload the story data to the instaAppStories collection
@@ -125,9 +127,10 @@ class _AddStoryScreenState extends State<AddStoryScreen> {
     String storyText = commentCon.text;
     bool isVideo = pickedVideo != null;
     String? userId = Provider.of<UserProvider>(context, listen: false).userModel?.uid.toString();
+    String? userName = Provider.of<UserProvider>(context, listen: false).userModel?.name.toString();
 
     if (selectedMediaFile != null) {
-      await uploadUserStory(selectedMediaFile, storyText, isVideo, userId!);
+      await uploadUserStory(selectedMediaFile, storyText, isVideo, userId! , userName!);
       ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text("Story uploaded successfully")));
 
       // Clear the form after a successful upload

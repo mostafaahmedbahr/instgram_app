@@ -1,9 +1,10 @@
 import 'package:flutter/material.dart';
+import 'package:instgram_app/models/story_model.dart';
 import 'package:story_view/story_view.dart';
 
 class StoryScreen extends StatefulWidget {
-  const StoryScreen({super.key});
-
+  const StoryScreen({super.key, required this.story});
+  final Story story;
   @override
   State<StoryScreen> createState() => _StoryScreenState();
 }
@@ -12,17 +13,30 @@ class _StoryScreenState extends State<StoryScreen> {
   var storyCon = StoryController();
   @override
   Widget build(BuildContext context) {
-    return   StoryView(
-        storyItems: [
-          StoryItem.pageImage(
-              url: "https://img.freepik.com/free-photo/international-day-education-celebration_23-2150931022.jpg?t=st=1721128291~exp=1721131891~hmac=be6b799ae01a499e56028121b8d0fa57b2db43b5850175c4ab1f9c1c606b11dc&w=740",
-              controller: storyCon
-          ),
-          // StoryItem.pageVideo(url, controller: controller),
-        ],
+    print(widget.story.isVideo);
+    final storyItem = widget.story.isVideo
+        ? StoryItem.pageVideo(
+      widget.story.storyMediaUrl.toString(),
+      controller: storyCon,
+      caption: Text(widget.story.storyText , style : const TextStyle(
+          color: Colors.white)),
+    )
+        : StoryItem.pageImage(
+      caption: Text(widget.story.storyText,style: const TextStyle(
+        color: Colors.white
+      ),),
+      url: "${widget.story.storyMediaUrl}",
+      controller: storyCon,
+    );
+    return   Scaffold(
+      body: StoryView(
+        storyItems: [storyItem],
         controller: storyCon,
         repeat: false,
-        onComplete: (){},
+        onComplete: () {
+          Navigator.of(context).pop(); // Close the screen when story is complete
+        },
+      ),
     );
   }
 }
