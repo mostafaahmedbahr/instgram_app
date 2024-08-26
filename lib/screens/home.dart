@@ -9,6 +9,7 @@ import 'package:provider/provider.dart';
 import '../models/story_model.dart';
 import '../provider/post_provider.dart';
 import '../provider/user_provider.dart';
+import 'chats_screen.dart';
 
 class HomeScreen extends StatefulWidget {
   const HomeScreen({super.key});
@@ -95,17 +96,26 @@ class _HomeScreenState extends State<HomeScreen> {
                   fontWeight: FontWeight.bold,
                 ),
               ),
-              _isLoading
-                  ? const Center(child: CircularProgressIndicator())
-                  : IconButton(
-                      onPressed: () {
-                        logout();
-                      },
-                      icon: const Icon(
-                        Icons.logout,
-                        color: Colors.white,
-                      ),
+              Row(
+                children: [
+                  IconButton(onPressed: (){
+                    Navigator.push(context, MaterialPageRoute(builder: (context){
+                      return ChatsScreen();
+                    }));
+                  }, icon: Icon(Icons.chat,color: Colors.white,)),
+                  _isLoading
+                      ? const Center(child: CircularProgressIndicator())
+                      : IconButton(
+                    onPressed: () {
+                      logout();
+                    },
+                    icon: const Icon(
+                      Icons.logout,
+                      color: Colors.white,
                     ),
+                  ),
+                ],
+              ),
             ],
           ),
           SizedBox(
