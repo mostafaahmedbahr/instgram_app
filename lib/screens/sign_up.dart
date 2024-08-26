@@ -87,6 +87,7 @@ class _SignUpScreenState extends State<SignUpScreen> {
       image: imageUrl,
       followers: [],
       following: [],
+      stories: [],
     );
     await FirebaseFirestore.instance.collection('instaAppUsers')
         .doc(uid).set(userModel.toMap());

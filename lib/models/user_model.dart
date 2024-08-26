@@ -6,6 +6,7 @@ class UserModel {
   final String image;
   final List<dynamic> followers;
   final List<dynamic> following;
+  final List<dynamic> stories;
 
   UserModel({
     required this.name,
@@ -15,6 +16,7 @@ class UserModel {
     required this.image,
     required this.followers,
     required this.following,
+    required this.stories,
   });
 
   // Convert UserModel to a map
@@ -27,6 +29,7 @@ class UserModel {
       'image': image,
       'followers': followers,
       'following': following,
+      'stories': stories,
     };
   }
 
@@ -40,6 +43,7 @@ class UserModel {
       image: map['image'] ?? '',
       followers: List<dynamic>.from(map['followers'] ?? []),
       following: List<dynamic>.from(map['following'] ?? []),
+      stories: List<dynamic>.from(map['stories'] ?? []),
     );
   }
 }
